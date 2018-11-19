@@ -1,0 +1,49 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+#
+# IMPORTANT !!!!!
+#
+# Once the VM is up and running .. you have to change /etc/kibana/kibana.yml 
+# this line:
+#	server.host: "localhost"
+# by 
+#	server.host: "0.0.0.0"
+#
+# and restart the servide: sudo systemctl restart kibana
+#
+# Otherwise kiabana is not accesible from the host machine
+
+
+VAGRANTFILE_API_VERSION = "2"
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+
+        config.ssh.forward_agent = true
+        config.vm.hostname = "elastic2"
+        config.vm.box = "centos/7"
+
+	#
+	# Network
+	# 
+	#config.vm.network "private_network", ip: "192.168.10.1"
+        config.vm.network :forwarded_port, guest: 9200, host: 9202
+        config.vm.network :forwarded_port, guest: 5601, host: 5603
+
+	config.vm.synced_folder "data/", "/home/vagrant/data/"
+	config.vm.synced_folder "dalma/", "/home/vagrant/dalma/"
+        config.ssh.insert_key = false
+
+	#
+	# Provision
+	#
+        config.vm.provision :shell, :path => "centosbootstrap.sh"
+	
+	config.vm.provision "file", source: "dot.bashrc", destination: "$HOME/.bashrc"
+	config.vm.provision "file", source: "kibana.yml", destination: "/etc/kibana/kibana.yml"
+	config.vm.provision "file", source: "logstash.conf", destination: "/etc/logstash/conf.d/logstash.conf"
+    
+        config.vm.provider :virtualbox do |v|
+            v.name = "centos_elasticsearch"
+	    v.customize ["modifyvm", :id, "--memory", 4096]
+        end
+end
