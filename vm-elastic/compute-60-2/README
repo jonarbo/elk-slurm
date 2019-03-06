@@ -1,1 +1,3 @@
 This is the script that runs in the development node and that queries the SLurm database to get the completed jobs from the last time
+
+in this directory you can find what would be in compute-60-2 in the WORK directory that can be mounted remotely 
